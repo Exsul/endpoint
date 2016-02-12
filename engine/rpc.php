@@ -36,4 +36,13 @@ phoxy_return_worker::$add_hook_cb = function($that)
 
 phpsql\OneLineConfig(conf()->db->connection_string);
 
+db::Query("INSERT INTO requests(url, get, post, headers, server) VALUES ($1, $2, $3, $4, $5)",
+  [
+    $_SERVER['QUERY_STRING'],
+    json_encode($_GET),
+    json_encode($_POST),
+    json_encode(getallheaders()),
+    json_encode($_SERVER),
+  ]);
+
 include('phoxy/load.php');
