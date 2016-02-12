@@ -33,8 +33,14 @@ class wallet extends api
     return $data['sha1_hash'] == $sign;
   }
 
-  private function new_income($data)
+  private function new_income($data = [])
   {
+    $trans = db::Begin();
 
+    db::Query("INSERT INTO transactions(system, data) VALUES ($1, $2)",
+      ["yandex.wallet", json_encode($data)]);
+
+    $result = $trans->Commit();
+    var_dump($result);
   }
 }

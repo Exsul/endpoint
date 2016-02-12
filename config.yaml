@@ -1,3 +1,5 @@
+db:
+  connection_string: pgsql://postgres@localhost/endpoint
 money:
   yandex:
     wallet:
