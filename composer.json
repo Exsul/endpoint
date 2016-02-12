@@ -1,15 +1,13 @@
 {
-  "name": "phoxy/bootstrap",
-  "description": "Little amount of files, required to best phoxy experience",
-  "license": "MIT",
+  "name": "exsul/endpoint",
+  "description": "WebSocket endpoint for every company-wide integration",
+  "license": "Apache-2.0",
   "minimum-stability": "dev",
   "require" :
   {
     "php": "~5.5",
     "phoxy/phoxy": "~1.4.2",
-    "phoxy/snippets": "~0",
     "enelar/phpa2o" : "~0",
-    "mustangostang/spyc": "~0.5",
-    "tedivm/jshrink": "~1.0"
+    "mustangostang/spyc": "~0.5"
   }
 }
