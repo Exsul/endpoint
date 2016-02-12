@@ -42,7 +42,7 @@ class yaml_config
     $config = $init;
 
     foreach ($init as $k => $v)
-      $config = array_merge_recursive($config, $this->load_file($init[$k]));
+      $config = array_replace_recursive($config, $this->load_file($init[$k]));
 
     $config = new \phpa2o\phpa2o($config);
 

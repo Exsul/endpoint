@@ -25,9 +25,13 @@ class wallet extends api
 
     $signed_data = [];
     foreach ($params as $param)
-      $signed_data[] = $data[$param];
+      if ($param == 'notification_secret')
+        $signed_data[] = conf()->money->yandex->wallet->shared_key;
+      else
+        $signed_data[] = $data[$param];
 
     $signed_string = implode("&", $signed_data);
+
     $sign = sha1($signed_string, false);
 
     return $data['sha1_hash'] == $sign;

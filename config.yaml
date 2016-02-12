@@ -3,6 +3,7 @@ db:
 money:
   yandex:
     wallet:
+      shared_key:
       sign_arguments:
         - notification_type
         - operation_id
