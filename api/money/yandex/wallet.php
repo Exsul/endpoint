@@ -6,6 +6,13 @@ class wallet extends api
   {
     global $_POST;
 
+    if (!count($_POST))
+    {
+      header('400 Empty request');
+      echo '400 Empty request';
+      exit();
+    }
+
     $this->require_valid_data($_POST);
     $this->new_income($_POST);
   }
@@ -16,6 +23,7 @@ class wallet extends api
       return;
 
     header('401 Data signature invalid');
+    echo '401 Data signature invalid';
     exit();
   }
 
@@ -33,7 +41,6 @@ class wallet extends api
     $signed_string = implode("&", $signed_data);
 
     $sign = sha1($signed_string, false);
-
     return $data['sha1_hash'] == $sign;
   }
 
@@ -41,10 +48,15 @@ class wallet extends api
   {
     $trans = db::Begin();
 
-    db::Query("INSERT INTO transactions(system, data) VALUES ($1, $2)",
-      ["yandex.wallet", json_encode($data)]);
+    $handle = db::Query("INSERT INTO transactions(system, data) VALUES ($1, $2) RETURNING id",
+      ["yandex.wallet", json_encode($data)], true);
 
     $result = $trans->Commit();
-    var_dump($result);
+
+    if (!$result)
+    {
+      header('500 Failed to store transaction');
+      exit();
+    }
   }
 }

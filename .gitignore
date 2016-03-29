@@ -1,3 +1,4 @@
 vendor
 phoxy
 composer.lock
+secret.yaml

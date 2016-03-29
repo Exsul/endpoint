@@ -14,3 +14,9 @@ money:
         - codepro
         - notification_secret
         - label
+
+# secret
+money:
+  yandex:
+    wallet:
+      shared_key:

@@ -45,6 +45,4 @@ db::Query("INSERT INTO requests(url, get, post, headers, server) VALUES ($1, $2,
     json_encode($_SERVER),
   ]);
 
-var_dump(conf());
-
 include('phoxy/load.php');
