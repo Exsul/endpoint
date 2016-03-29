@@ -36,13 +36,15 @@ phoxy_return_worker::$add_hook_cb = function($that)
 
 phpsql\OneLineConfig(conf()->db->connection_string);
 
-db::Query("INSERT INTO requests(url, get, post, headers, server) VALUES ($1, $2, $3, $4, $5)",
+$log = db::Query("INSERT INTO requests(url, get, post, headers, server) VALUES ($1, $2, $3, $4, $5) RETURNING id",
   [
-    $_SERVER['QUERY_STRING'],
+    $_SERVER['REQUEST_URI'],
     json_encode($_GET),
     json_encode($_POST),
     json_encode(getallheaders()),
     json_encode($_SERVER),
-  ]);
+  ], true);
+
+define('REQUEST_ID', $log['id']);
 
 include('phoxy/load.php');
