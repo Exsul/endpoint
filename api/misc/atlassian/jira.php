@@ -120,77 +120,35 @@ class jira extends api
     $this->NotifyWatchers($issue, $parcel, $refered);
   }
 
-  private function PrepareList($array_of_arrays)
-  {
-    $res = [];
-    foreach ($array_of_arrays as $array)
-      $res = array_merge($res, $array);
-
-    $prepared = [];
-    foreach ($res as $user)
-    {
-      $name = null;
-
-      if (is_string($user))
-        $name = $user;
-      else if (is_array($user))
-        if (isset($user['id']))
-          $name = $user['id'];
-        else
-        {
-          $this->debuglog($user);
-          continue;
-        }
-
-      if ($name == '@channel' || strlen($name) < 2)
-        continue;
-
-      $prepared[] = $this->translate_to($name);
-    }
-
-    return array_unique($prepared);
-  }
-
   private function NotifyWatchers($issue, $message, $referenced = [])
   {
-    $hugelist = $this->PrepareList([$issue['watches'], $issue['members'], $referenced]);
-
-    foreach ($hugelist as $to)
-    {
-      if (is_array($message))
-        $parcel = $message;
-      else
-        $parcel =
-        [
-          'from' => $issue['title'],
-          'message' => $message
-        ];
-
-      if (!isset($parcel['attach']))
-        $parcel['attach'] = null;
-
-      $this->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
-    }
+    phoxy::Load("misc/atlassian/jira/notifier")
+      ->NotifyWatchers($issue, $message, $referenced);
   }
 
   private function reference($text)
   {
-    return phoxy::Load("misc/atlassian/jira/users")->reference($text);
+    return phoxy::Load("misc/atlassian/jira/users")
+      ->reference($text);
   }
 
-  private function reference_rich($text, &$refered)
+  private function reference_rich($text, &$a)
   {
-    return phoxy::Load("misc/atlassian/jira/users")->reference_rich($text);
+    $users = phoxy::Load("misc/atlassian/jira/users");
+    $users->reference($text);
+    $a = $users->last_refered();
   }
 
   private function dic()
   {
-    return phoxy::Load("misc/atlassian/jira/users")->dic();
+    return phoxy::Load("misc/atlassian/jira/users")
+      ->dic();
   }
 
   private function translate_to($to)
   {
-    return phoxy::Load("misc/atlassian/jira/users")->translate_to();
+    return phoxy::Load("misc/atlassian/jira/users")
+      ->translate_to();
   }
 
   private function construct_nice_user($data)
