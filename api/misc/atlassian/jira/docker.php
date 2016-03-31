@@ -12,7 +12,7 @@ class docker extends api
         json_encode($data, true),
       ], true);
 
-    $this->dig_data($data);
+    phoxy::Load("misc/atlassian/jira/router")->handle_event($data);
   }
 
   protected function read()

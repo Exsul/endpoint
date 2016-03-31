@@ -13,7 +13,7 @@ class router extends api
       return;
     }
 
-    $issue = $this->construct_nice_issue($data);
+    $issue = phoxy::Load('misc/atlassian/jira/request')->construct_nice_issue($data);
 
     if (isset($data['changelog']))
       return $this->process_changelog($issue, $data['changelog']['items']);
@@ -46,14 +46,14 @@ class router extends api
   {
     $message = "{$issue['idmarkdown']} status *{$item['fromString']}* -> *{$item['toString']}*";
 
-    $this->NotifyWatchers($issue, $message);
+    phoxy::Load('misc/atlassian/jira/notifier')->NotifyWatchers($issue, $message);
   }
 
   private function on_comment($issue, $comment)
   {
-    $author = $this->construct_nice_user($comment['author']);
+    $author = phoxy::Load('misc/atlassian/jira/request')->construct_nice_user($comment['author']);
 
-    $message = $this->reference_rich($comment['body'], $refered);
+    $message = phoxy::Load('misc/atlassian/jira/users')->reference_rich($comment['body'], $refered);
 
     $attach =
     [
@@ -69,6 +69,6 @@ class router extends api
       'attach' => $attach,
     ];
 
-    $this->NotifyWatchers($issue, $parcel, $refered);
+    phoxy::Load('misc/atlassian/jira/notifier')->NotifyWatchers($issue, $parcel, $refered);
   }
 }
