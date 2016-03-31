@@ -6,10 +6,11 @@ class notifier extends api
   {
     $res = [];
 
-    phoxy::Load('misc/atlassian/jira')->debuglog($array_of_arrays);
-    die();
+    $users = phoxy::Load('misc/atlassian/jira/users');
+
     foreach ($array_of_arrays as $array)
-      $res = array_merge($res, $array);
+      if (count($array))
+        $res = array_merge($res, $array);
 
     $prepared = [];
     foreach ($res as $user)
@@ -30,7 +31,7 @@ class notifier extends api
       if ($name == '@channel' || strlen($name) < 2)
         continue;
 
-      $prepared[] = $this->translate_to($name);
+      $prepared[] = $users->translate_to($name);
     }
 
     return array_unique($prepared);
@@ -55,6 +56,8 @@ class notifier extends api
 
       if (!isset($parcel['attach']))
         $parcel['attach'] = null;
+
+      phoxy::Load("misc/atlassian/jira")->debuglog($parcel);
 
 
       $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);

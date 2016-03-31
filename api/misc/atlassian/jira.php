@@ -45,7 +45,7 @@ class jira extends api
     phoxy::Load("misc/atlassian/jira/footboy")->send($from, $to, $message, $attach);
   }
 
-  private function debuglog($what)
+  public function debuglog($what)
   {
     phoxy::Load("misc/atlassian/jira/footboy")->debuglog($what);
   }
@@ -135,8 +135,10 @@ class jira extends api
   private function reference_rich($text, &$a)
   {
     $users = phoxy::Load("misc/atlassian/jira/users");
-    $users->reference($text);
+    $ret = $users->reference($text);
     $a = $users->last_refered();
+
+    return $ret;
   }
 
   private function dic()
@@ -208,8 +210,13 @@ class jira extends api
 
   protected function test()
   {
-    $test = phoxy::Load("misc/atlassian/jira/footboy");
+    $test = phoxy::Load("misc/atlassian/jira/notifier");
 
+    var_dump($test);
+
+
+    echo $test->NotifyWatchers($issue, $message, $referenced);
+      die();
     $test->send("from", "kirill", "message");
     //return $this->translate_to('kirill');
   }
