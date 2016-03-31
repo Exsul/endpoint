@@ -42,32 +42,12 @@ class jira extends api
 
   private function send($from, $to, $message, $attach = null)
   {
-    $url = conf()->misc->atlassian->jira->slack;
-    $ch = curl_init();
-
-    $post =
-    [
-      'from' => $from,
-      'to' => curl_escape($ch, $to),
-      'message' => $this->reference($message),
-    ];
-
-    if (!is_null($attach))
-      $post['attach'] = $attach;
-
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post));
-    curl_setopt($ch, CURLOPT_URL, $url);
-      curl_exec($ch);
-     curl_close($ch);
+    phoxy::Load("misc/atlassian/jira/footboy")->send($from, $to, $message, $attach);
   }
 
   private function debuglog($what)
   {
-    if (!is_string($what))
-      $what = json_encode($what, true);
-
-    $this->send('debug', '#kirill_lab', $what);
+    phoxy::Load("misc/atlassian/jira/footboy")->debuglog($what);
   }
 
   private function dig_data($data)
@@ -325,6 +305,9 @@ class jira extends api
 
   protected function test()
   {
-    return $this->translate_to('kirill');
+    $test = phoxy::Load("misc/atlassian/jira/footboy");
+
+    $test->debuglog("success");
+    //return $this->translate_to('kirill');
   }
 }
