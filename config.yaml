@@ -20,3 +20,8 @@ money:
   yandex:
     wallet:
       shared_key:
+misc:
+  atlassian:
+    jira:
+      apikey:
+      slack:
