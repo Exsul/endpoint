@@ -57,9 +57,6 @@ class notifier extends api
       if (!isset($parcel['attach']))
         $parcel['attach'] = null;
 
-      phoxy::Load("misc/atlassian/jira")->debuglog($parcel);
-
-
       $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
     }
   }
