@@ -4,12 +4,19 @@ class users extends api
 {
   public function reference($text)
   {
-    return $this->reference_rich($text, $refered);
+    return $this->reference_rich($text);
   }
 
-  public function reference_rich($text, &$refered)
+  public $refered;
+
+  public function last_refered()
   {
-    $refered = [];
+    return $this->refered;
+  }
+
+  public function reference_rich($text, $old = [])
+  {
+    $this->refered = [];
     $parts = explode("[~", $text);
     $ret = "";
 
@@ -26,14 +33,14 @@ class users extends api
       list($name, $other) = explode(']', $part, 2);
       $translated = $this->translate_to($name);
 
-      $refered[] = $translated;
+      $this->refered[] = $translated;
 
       $ret .= $translated;
       $ret .= $other;
     }
 
     if (strpos($ret, "@channel") !== false)
-      $refered = array_merge($refered, $this->dic());
+      $this->refered = array_merge($this->refered, $this->dic());
 
     return $ret;
   }
