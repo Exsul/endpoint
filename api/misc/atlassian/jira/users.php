@@ -61,6 +61,12 @@ class users extends api
 
   public function translate_to($to)
   {
+    if (!is_string($to))
+    {
+      phoxy::Load('misc/atlassian/jira')->debuglog($to);
+      die();
+    }
+
     if ($to[0] == '@')
       return $to;
 
@@ -68,11 +74,10 @@ class users extends api
 
     $dic = $this->dic();
 
-
     if (isset($dic[$to]))
       return $dic[$to];
 
-    $this->debuglog("NAME $to UNDEFINED".debug_backtrace());
+    $this->debuglog(["NAME $to UNDEFINED", debug_backtrace()]);
 
     return $to;
   }

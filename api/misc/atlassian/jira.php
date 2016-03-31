@@ -175,77 +175,22 @@ class jira extends api
 
   private function reference($text)
   {
-    return $this->reference_rich($text, $refered);
+    return phoxy::Load("misc/atlassian/jira/users")->reference($text);
   }
 
   private function reference_rich($text, &$refered)
   {
-    $refered = [];
-    $parts = explode("[~", $text);
-    $ret = "";
-
-    for ($i = 0; $i < count($parts); $i++)
-    {
-      $part = $parts[$i];
-      $mode = $i & 1;
-      if (!$mode)
-      {
-        $ret .= $part;
-        continue;
-      }
-
-      list($name, $other) = explode(']', $part, 2);
-      $translated = $this->translate_to($name);
-
-      $refered[] = $translated;
-
-      $ret .= $translated;
-      $ret .= $other;
-    }
-
-    if (strpos($ret, "@channel") !== false)
-      $refered = array_merge($refered, $this->dic());
-
-    return $ret;
+    return phoxy::Load("misc/atlassian/jira/users")->reference_rich($text);
   }
 
   private function dic()
   {
-    return
-    [
-      "bogdan.bogomazov"      => "@b.bogomazov",
-      "daria.chikisheva"      => "@dariachikisheva",
-      "diego.vasquez"         => "@diegovasquez",
-      "elena.achikyan"        => "@achikyan",
-      "gleb.vereshchagin"     => "@gv",
-      "igor"                  => "@ie",
-      "irina.yush"            => "@irina.yush",
-      "julia.simkina"         => "@julia_simkina",
-      "kirill"                => "@kirillberezin",
-      "kostas zhukov"         => "@kostas",
-      "margarita.akhmatova"   => "@margarita",
-      "mergen.chumudov"       => "@mergen",
-      "vk"                    => "@vlkuzetsov",
-      "zaitsev"               => "@zaitsev",
-    ];
+    return phoxy::Load("misc/atlassian/jira/users")->dic();
   }
 
   private function translate_to($to)
   {
-    if ($to[0] == '@')
-      return $to;
-
-    $to = strtolower($to);
-
-    $dic = $this->dic();
-
-
-    if (isset($dic[$to]))
-      return $dic[$to];
-
-    $this->debuglog("NAME $to UNDEFINED".debug_backtrace());
-
-    return $to;
+    return phoxy::Load("misc/atlassian/jira/users")->translate_to();
   }
 
   private function construct_nice_user($data)
@@ -307,7 +252,7 @@ class jira extends api
   {
     $test = phoxy::Load("misc/atlassian/jira/footboy");
 
-    $test->debuglog("success");
+    $test->send("from", "kirill", "message");
     //return $this->translate_to('kirill');
   }
 }

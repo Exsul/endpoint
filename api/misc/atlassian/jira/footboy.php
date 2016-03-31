@@ -2,16 +2,20 @@
 
 class footboy extends api
 {
-  private function send($from, $to, $message, $attach = null)
+  public function send($from, $to, $message, $attach = null)
   {
     $url = conf()->misc->atlassian->jira->slack;
     $ch = curl_init();
 
+    $users = phoxy::Load('misc/atlassian/jira/users');
+
+    $target = $users->translate_to($to);
+
     $post =
     [
       'from' => $from,
-      'to' => curl_escape($ch, $to),
-      'message' => phoxy::Load('misc/atlassian/jira/users')->reference($message),
+      'to' => curl_escape($ch, $target),
+      'message' => $users->reference($message),
     ];
 
     if (!is_null($attach))
