@@ -27,6 +27,21 @@ class request extends api
     return $ret;
   }
 
+  public function construct_attachments($attachement)
+  {
+    if (!count($attachement))
+      return [];
+
+    $ret = [];
+    foreach ($attachement as $file)
+    {
+      $file['author'] = $this->construct_nice_user($file['author']);
+      $ret[$file['id']] = $file;
+    }
+
+    return $ret;
+  }
+
   public function construct_nice_issue($data)
   {
     $fields = $data['issue']['fields'];
@@ -46,6 +61,7 @@ class request extends api
       "members" => [],
       "creator" => $this->construct_nice_user($fields['creator']),
       "assignee" => $this->construct_nice_user($fields['assignee']),
+      "attachments" => $this->construct_attachments($fields['attachment']),
     ];
 
     $ret['watches'] = $this->construct_watches($fields['watches']['self']);

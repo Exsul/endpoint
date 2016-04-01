@@ -48,7 +48,7 @@ class notifier extends api
     $this->RichNotify($hugelist, $author, $issue, $message, $attach);
   }
 
-  public function RichNotify($who, $author, $issue, $message, $attach = [])
+  public function RichNotify($who, $author, $issue, $message, $extra = [])
   {
     $attach =
     [
@@ -62,8 +62,10 @@ class notifier extends api
 
     $parcel =
     [
-      'attach' => $attach,
+      'attach' => array_replace($attach, $extra),
     ];
+
+    phoxy::Load('misc/atlassian/jira')->debuglog($parcel);
 
     if (is_string($who))
       $this->Notify($who, $issue, $parcel);

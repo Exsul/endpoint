@@ -58,6 +58,9 @@ class router extends api
       case "summary":
       case "Component":
         break;
+      case "Attachment":
+        $this->on_attachement_change($issue, $item, $user);
+        break;
       case "Sprint":
         $this->on_sprint_change($issue, $item, $user);
         break;
@@ -187,6 +190,24 @@ class router extends api
 
     phoxy::Load('misc/atlassian/jira/notifier')
       ->RichNotifyWatchers($who_interested, $author, $issue, $message);
+  }
+
+  private function on_attachement_change($issue, $item, $author)
+  {
+    if ($item['fromString'] == null)
+    { // add
+      $id = $item['to'];
+      $file = $issue['attachments'][$id];
+
+      $message = "Attached <{$file['content']}|{$file['filename']}>";
+
+      $extra =
+      [
+      ];
+
+      phoxy::Load('misc/atlassian/jira/notifier')
+        ->RichNotifyWatchers([], $author, $issue, $message, $extra);
+    }
   }
 
   private function on_comment($issue, $comment)
