@@ -39,27 +39,29 @@ class notifier extends api
     return array_unique($prepared);
   }
 
+  public function Notify($who, $issue, $message)
+  {
+    if (is_array($message))
+      $parcel = $message;
+    else
+      $parcel =
+      [
+        'from' => $issue['title'],
+        'message' => $message
+      ];
+
+    if (!isset($parcel['attach']))
+      $parcel['attach'] = null;
+
+    $sender = phoxy::Load('misc/atlassian/jira/footboy');
+    $sender->send($parcel['from'], $who, $parcel['message'], $parcel['attach']);
+  }
+
   public function NotifyWatchers($issue, $message, $referenced = [])
   {
     $hugelist = $this->PrepareList([$issue['watches'], $issue['members'], $referenced]);
 
-    $sender = phoxy::Load('misc/atlassian/jira/footboy');
-
     foreach ($hugelist as $to)
-    {
-      if (is_array($message))
-        $parcel = $message;
-      else
-        $parcel =
-        [
-          'from' => $issue['title'],
-          'message' => $message
-        ];
-
-      if (!isset($parcel['attach']))
-        $parcel['attach'] = null;
-
-      $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
-    }
+      $this->Notify($to, $issue, $message);
   }
 }
