@@ -53,7 +53,10 @@ class router extends api
   {
     $author = phoxy::Load('misc/atlassian/jira/request')->construct_nice_user($comment['author']);
 
-    $message = phoxy::Load('misc/atlassian/jira/users')->reference_rich($comment['body'], $refered);
+    $users = phoxy::Load('misc/atlassian/jira/users');
+    $message = $users->reference_rich($comment['body']);
+
+    $refered = $users->last_refered();
 
     $attach =
     [

@@ -31,7 +31,9 @@ class notifier extends api
       if ($name == '@channel' || strlen($name) < 2)
         continue;
 
-      $prepared[] = $users->translate_to($name);
+      $translated = $users->translate_to($name);
+
+      $prepared[] = $translated;
     }
 
     return array_unique($prepared);

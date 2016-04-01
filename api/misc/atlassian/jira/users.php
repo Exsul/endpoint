@@ -63,6 +63,7 @@ class users extends api
       "mergen.chumudov"       => "@mergen",
       "vk"                    => "@vlkuzetsov",
       "zaitsev"               => "@zaitsev",
+      "gabriel.desouza"       => "@caio_sga",
     ];
   }
 
@@ -83,6 +84,10 @@ class users extends api
 
     if (isset($dic[$to]))
       return $dic[$to];
+
+    foreach ($dic as $jira => $slack)
+      if (strpos($slack, $to))
+        return $slack;
 
     $this->debuglog(["NAME $to UNDEFINED", debug_backtrace()]);
 
