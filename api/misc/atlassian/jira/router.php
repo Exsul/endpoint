@@ -84,7 +84,6 @@ class router extends api
 
     $parcel =
     [
-      'from' => $author['title'],
       'attach' => $attach,
     ];
 
@@ -112,7 +111,6 @@ class router extends api
   {
     $message =
     [
-      "from" => $issue['title'],
       "message" => "{$issue['idmarkdown']} just created ",
     ];
 

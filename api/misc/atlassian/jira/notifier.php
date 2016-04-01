@@ -49,16 +49,16 @@ class notifier extends api
     else
       $parcel =
       [
-        'from' => $issue['title'],
         'message' => $message
       ];
+
+    if (!isset($parcel['from']))
+      $parcel['from'] = 'JIRA';
 
     if (!isset($parcel['attach']))
       $parcel['attach'] = null;
 
-    var_dump($who);
     $to = $this->PrepareUser($who);
-    var_dump($to);
 
     $sender = phoxy::Load('misc/atlassian/jira/footboy');
     $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
