@@ -4,6 +4,9 @@ class request extends api
 {
   public function construct_nice_user($data)
   {
+    if (!is_array($data))
+      return $data;
+
     return
     [
       "id" => $data['key'],
@@ -11,6 +14,17 @@ class request extends api
       "title" => $data['displayName'],
       "url" => $data['self'],
     ];
+  }
+
+  public function construct_watches($link)
+  {
+    $watches = $this->request_jira($link);
+
+    $ret = [];
+    foreach ($watches["watchers"] as $watcher)
+      $ret[] = $this->construct_nice_user($watcher);
+
+    return $ret;
   }
 
   public function construct_nice_issue($data)
@@ -30,12 +44,11 @@ class request extends api
       "links" => [],
       "watches" => [],
       "members" => [],
+      "creator" => $this->construct_nice_user($fields['creator']),
+      "assignee" => $this->construct_nice_user($fields['assignee']),
     ];
 
-    $watches = $this->request_jira($fields['watches']['self']);
-
-    foreach ($watches["watchers"] as $watcher)
-      $ret['watches'][] = $this->construct_nice_user($watcher);
+    $ret['watches'] = $this->construct_watches($fields['watches']['self']);
 
     if (!is_array($fields["customfield_10218"]))
     {
