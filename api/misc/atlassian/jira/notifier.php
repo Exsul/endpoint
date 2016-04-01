@@ -15,18 +15,7 @@ class notifier extends api
     $prepared = [];
     foreach ($res as $user)
     {
-      $name = null;
-
-      if (is_string($user))
-        $name = $user;
-      else if (is_array($user))
-        if (isset($user['id']))
-          $name = $user['id'];
-        else
-        {
-          $this->debuglog($user);
-          continue;
-        }
+      $name = $this->PrepareUser($user);
 
       if ($name == '@channel' || strlen($name) < 2)
         continue;
@@ -37,6 +26,20 @@ class notifier extends api
     }
 
     return array_unique($prepared);
+  }
+
+  private function PrepareUser($user)
+  {
+    $name = null;
+
+    if (is_string($user))
+      return $user;
+    else if (is_array($user))
+      if (isset($user['id']))
+        return $user['id'];
+
+    phoxy::Load('misc/atlassian/jira')->debuglog("Failing to understand user");
+    phoxy::Load('misc/atlassian/jira')->debuglog($user);
   }
 
   public function Notify($who, $issue, $message)
@@ -53,8 +56,12 @@ class notifier extends api
     if (!isset($parcel['attach']))
       $parcel['attach'] = null;
 
+    var_dump($who);
+    $to = $this->PrepareUser($who);
+    var_dump($to);
+
     $sender = phoxy::Load('misc/atlassian/jira/footboy');
-    $sender->send($parcel['from'], $who, $parcel['message'], $parcel['attach']);
+    $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
   }
 
   public function NotifyWatchers($issue, $message, $referenced = [])
