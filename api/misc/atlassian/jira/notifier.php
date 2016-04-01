@@ -42,6 +42,34 @@ class notifier extends api
     phoxy::Load('misc/atlassian/jira')->debuglog($user);
   }
 
+  public function RichNotifyWatchers($who, $author, $issue, $message, $attach = [])
+  {
+    $hugelist = $this->PrepareList([$issue['watches'], $issue['members'], $who]);
+    $this->RichNotify($hugelist, $author, $issue, $message, $attach);
+  }
+
+  public function RichNotify($who, $author, $issue, $message, $attach = [])
+  {
+    $attach =
+    [
+      'fallback' => "{$author['title']} {$message}",
+      'text' => $message,
+      'author_name' => $author['title'],
+      'author_icon' => $author['avatar'],
+      'title' => "{$issue['idmarkdown']} {$issue['title']}",
+    ];
+
+    $parcel =
+    [
+      'attach' => $attach,
+    ];
+
+    if (is_string($who))
+      $this->Notify($who, $issue, $parcel);
+    else
+      $this->NotifyList($who, $issue, $parcel);
+  }
+
   public function Notify($who, $issue, $message)
   {
     if (is_array($message))
@@ -57,6 +85,8 @@ class notifier extends api
 
     if (!isset($parcel['attach']))
       $parcel['attach'] = null;
+    if (!isset($parcel['message']))
+      $parcel['message'] = null;
 
     $to = $this->PrepareUser($who);
 
@@ -64,11 +94,16 @@ class notifier extends api
     $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
   }
 
+  public function NotifyList($list, $issue, $message)
+  {
+    foreach ($list as $to)
+      $this->Notify($to, $issue, $message);
+  }
+
   public function NotifyWatchers($issue, $message, $referenced = [])
   {
     $hugelist = $this->PrepareList([$issue['watches'], $issue['members'], $referenced]);
 
-    foreach ($hugelist as $to)
-      $this->Notify($to, $issue, $message);
+    $this->NotifyList($hugelist, $issue, $message);
   }
 }
