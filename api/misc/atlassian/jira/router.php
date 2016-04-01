@@ -4,17 +4,23 @@ class router extends api
 {
   public function handle_event($data)
   {
-    if ($data['webhookEvent'] == 'comment_created')
-      return;
+    $issue = phoxy::Load('misc/atlassian/jira/request')->construct_nice_issue($data);
 
-    if ($data['webhookEvent'] !== 'jira:issue_updated')
+    switch ($data['webhookEvent'])
     {
+    case 'comment_created':
+      return;
+    case 'jira:issue_updated':
+      $this->handle_issue_update($issue, $data);
+      break;
+    default:
       phoxy::Load('misc/atlassian/jira')->debuglog("Unknown type ".$data['webhookEvent']);
       return;
     }
+  }
 
-    $issue = phoxy::Load('misc/atlassian/jira/request')->construct_nice_issue($data);
-
+  private function handle_issue_update($issue, $data)
+  {
     if (isset($data['changelog']))
       return $this->process_changelog($issue, $data['changelog']['items']);
 
