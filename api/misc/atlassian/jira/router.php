@@ -32,7 +32,7 @@ class router extends api
     phoxy::Load('misc/atlassian/jira')->debuglog("Issue event type {$data['issue_event_type_name']}");
 
     if (isset($data['changelog']))
-      return $this->process_changelog($issue, $data['changelog']['items']);
+      return $this->process_changelog($issue, $data['changelog']['items'], $user);
 
     if (isset($data['comment']))
       return $this->on_comment($issue, $data['comment']);
@@ -51,6 +51,9 @@ class router extends api
         break;
       case "members":
         break;
+      case "assignee":
+        $this->on_assignee_change($issue, $item, $user);
+        break;
       default:
         $item['jirabot'] = "Unable to handle item";
         phoxy::Load('misc/atlassian/jira')->debuglog($item);
@@ -58,14 +61,36 @@ class router extends api
     }
   }
 
+  private function default_item_string($item)
+  {
+    $field = $item["field"];
+
+    $title = strtoupper($field[0]).substr($field, 1);
+    return "{$title} *{$item['fromString']}* -> *{$item['toString']}*";
+  }
+
   private function on_status_change($issue, $item, $author)
   {
-    $message = "Status *{$item['fromString']}* -> *{$item['toString']}*";
+    $message = $this->default_item_string($item);
 
     $who_interested =
     [
       $issue['creator'],
       $issue['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
+  }
+
+  private function on_assignee_change($issue, $item, $author)
+  {
+    $message = $this->default_item_string($item);
+
+    $who_interested =
+    [
+      $item['from'],
+      $item['to'],
     ];
 
     phoxy::Load('misc/atlassian/jira/notifier')
