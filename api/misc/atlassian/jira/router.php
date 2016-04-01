@@ -77,7 +77,8 @@ class router extends api
     [
       'fallback' => "{$author['title']} {$message}",
       'text' => $message,
-      'author_url' => $author['avatar'],
+      'author_name' => $author['title'],
+      'author_icon' => $author['avatar'],
       'title' => "{$issue['idmarkdown']} {$issue['title']}",
     ];
 
