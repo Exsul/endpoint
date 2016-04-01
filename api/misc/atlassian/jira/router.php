@@ -48,12 +48,24 @@ class router extends api
   {
     foreach ($items as $item)
     {
+      if (!isset($issue['assignee']))
+        $issue['assignee'] = null;
+
       switch ($item['field'])
       {
+      case "members":
+      case "Rank":
+      case "summary":
+      case "Component":
+        break;
+      case "Sprint":
+        $this->on_sprint_change($issue, $item, $user);
+        break;
+      case "Fix Version":
+        $this->on_version_change($issue, $item, $user);
+        break;
       case "status":
         $this->on_status_change($issue, $item, $user);
-        break;
-      case "members":
         break;
       case "assignee":
         $this->on_assignee_change($issue, $item, $user);
@@ -63,6 +75,9 @@ class router extends api
         break;
       case "resolution":
         $this->on_resolution_change($issue, $item, $user);
+        break;
+      case "duedate":
+        $this->on_due_date($issue, $item, $user);
         break;
       default:
         $item['jirabot'] = "Unable to handle item";
@@ -113,8 +128,36 @@ class router extends api
 
     $who_interested =
     [
-      $item['creator'],
-      $item['assignee'],
+      $issue['creator'],
+      $issue['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
+  }
+
+  private function on_sprint_change($issue, $item, $author)
+  {
+    $message = ":calendar: {$item['toString']}";
+
+    $who_interested =
+    [
+      $issue['creator'],
+      $issue['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
+  }
+
+  private function on_version_change($issue, $item, $author)
+  {
+    $message = "Added to :golf:{$item['toString']}";
+
+    $who_interested =
+    [
+      $issue['creator'],
+      $issue['assignee'],
     ];
 
     phoxy::Load('misc/atlassian/jira/notifier')
@@ -130,6 +173,20 @@ class router extends api
 
     phoxy::Load('misc/atlassian/jira/notifier')
       ->RichNotify("#kirill_lab", $author, $issue, $message);
+  }
+
+  private function on_due_date($issue, $item, $author)
+  {
+    $message = "Due *{$item['from']}* -> *{$item['to']}*";
+
+    $who_interested =
+    [
+      $issue['creator'],
+      $issue['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
   }
 
   private function on_comment($issue, $comment)
