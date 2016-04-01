@@ -57,6 +57,7 @@ class notifier extends api
       'author_name' => $author['title'],
       'author_icon' => $author['avatar'],
       'title' => "{$issue['idmarkdown']} {$issue['title']}",
+      'mrkdwn_in' => ["pretext", "text", "fields"],
     ];
 
     $parcel =

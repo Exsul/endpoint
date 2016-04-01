@@ -5,16 +5,17 @@ class router extends api
   public function handle_event($data)
   {
     $issue = phoxy::Load('misc/atlassian/jira/request')->construct_nice_issue($data);
+    $user = phoxy::Load('misc/atlassian/jira/request')->construct_nice_user($data['user']);
 
     switch ($data['webhookEvent'])
     {
     case 'comment_created':
       return;
     case 'jira:issue_updated':
-      $this->handle_issue_update($issue, $data);
+      $this->handle_issue_update($issue, $data, $user);
       break;
     case 'jira:issue_created':
-      $this->handle_issue_create($issue, $data);
+      $this->handle_issue_create($issue, $data, $user);
       break;
     default:
       phoxy::Load('misc/atlassian/jira')->debuglog("Unknown type ".$data['webhookEvent']);
@@ -26,7 +27,7 @@ class router extends api
    * Issue update
    ***/
 
-  private function handle_issue_update($issue, $data)
+  private function handle_issue_update($issue, $data, $user)
   {
     phoxy::Load('misc/atlassian/jira')->debuglog("Issue event type {$data['issue_event_type_name']}");
 
@@ -39,14 +40,14 @@ class router extends api
     phoxy::Load('misc/atlassian/jira')->debuglog("Unexpected situation {$data['timestamp']}");
   }
 
-  private function process_changelog($issue, $items)
+  private function process_changelog($issue, $items, $user)
   {
     foreach ($items as $item)
     {
       switch ($item['field'])
       {
       case "status":
-        $this->on_status_change($issue, $item);
+        $this->on_status_change($issue, $item, $user);
         break;
       case "members":
         break;
@@ -57,11 +58,18 @@ class router extends api
     }
   }
 
-  private function on_status_change($issue, $item)
+  private function on_status_change($issue, $item, $author)
   {
-    $message = "{$issue['idmarkdown']} status *{$item['fromString']}* -> *{$item['toString']}*";
+    $message = "Status *{$item['fromString']}* -> *{$item['toString']}*";
 
-    phoxy::Load('misc/atlassian/jira/notifier')->NotifyWatchers($issue, $message);
+    $who_interested =
+    [
+      $issue['creator'],
+      $issue['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
   }
 
   private function on_comment($issue, $comment)
@@ -81,7 +89,7 @@ class router extends api
    * Issue create
    ***/
 
-  private function handle_issue_create($issue, $data)
+  private function handle_issue_create($issue, $data, $user)
   {
     switch ($data["issue_event_type_name"])
     {
@@ -92,25 +100,5 @@ class router extends api
       phoxy::Load('misc/atlassian/jira')->debuglog("Issue created event type unknown {$data['issue_event_type_name']}");
       return;
     }
-  }
-
-  private function on_issue_created($issue)
-  {
-    $message =
-    [
-      "message" => "{$issue['idmarkdown']} just created ",
-    ];
-
-    $notifier = phoxy::Load('misc/atlassian/jira/notifier');
-
-    $notifier->Notify($issue['creator'], $issue, $message);
-
-    if ($issue['assignee'] == null)
-      return;
-    if ($issue['assignee']['id'] == $issue['creator']['id'])
-      return;
-
-    $message['message'] .= " and assigned to YOU";
-    $notifier->Notify($issue['assignee'], $issue, $message);
   }
 }
