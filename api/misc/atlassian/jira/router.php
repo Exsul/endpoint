@@ -73,21 +73,8 @@ class router extends api
 
     $refered = $users->last_refered();
 
-    $attach =
-    [
-      'fallback' => "{$author['title']} {$message}",
-      'text' => $message,
-      'author_name' => $author['title'],
-      'author_icon' => $author['avatar'],
-      'title' => "{$issue['idmarkdown']} {$issue['title']}",
-    ];
-
-    $parcel =
-    [
-      'attach' => $attach,
-    ];
-
-    phoxy::Load('misc/atlassian/jira/notifier')->NotifyWatchers($issue, $parcel, $refered);
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($refered, $author, $issue, $message);
   }
 
   /***
