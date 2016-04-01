@@ -4,8 +4,12 @@ class router extends api
 {
   public function handle_event($data)
   {
-    $issue = phoxy::Load('misc/atlassian/jira/request')->construct_nice_issue($data);
-    $user = phoxy::Load('misc/atlassian/jira/request')->construct_nice_user($data['user']);
+    $request = phoxy::Load('misc/atlassian/jira/request');
+    $issue = $request->construct_nice_issue($data);
+
+    $user = [];
+    if (isset($data['user']))
+      $user = $request->construct_nice_user($data['user']);
 
     switch ($data['webhookEvent'])
     {
@@ -54,6 +58,12 @@ class router extends api
       case "assignee":
         $this->on_assignee_change($issue, $item, $user);
         break;
+      case "priority":
+        $this->on_priority_change($issue, $item, $user);
+        break;
+      case "resolution":
+        $this->on_resolution_change($issue, $item, $user);
+        break;
       default:
         $item['jirabot'] = "Unable to handle item";
         phoxy::Load('misc/atlassian/jira')->debuglog($item);
@@ -97,6 +107,31 @@ class router extends api
       ->RichNotifyWatchers($who_interested, $author, $issue, $message);
   }
 
+  private function on_priority_change($issue, $item, $author)
+  {
+    $message = $this->default_item_string($item);
+
+    $who_interested =
+    [
+      $item['creator'],
+      $item['assignee'],
+    ];
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotifyWatchers($who_interested, $author, $issue, $message);
+  }
+
+  private function on_resolution_change($issue, $item, $author)
+  {
+    if (!$item['toString'])
+      return;
+
+    $message = ":crossed_flags: *{$item['toString']}*";
+
+    phoxy::Load('misc/atlassian/jira/notifier')
+      ->RichNotify("#kirill_lab", $author, $issue, $message);
+  }
+
   private function on_comment($issue, $comment)
   {
     $author = phoxy::Load('misc/atlassian/jira/request')->construct_nice_user($comment['author']);
@@ -125,5 +160,25 @@ class router extends api
       phoxy::Load('misc/atlassian/jira')->debuglog("Issue created event type unknown {$data['issue_event_type_name']}");
       return;
     }
+  }
+
+  private function on_issue_created($issue)
+  {
+    $message =
+    [
+      "message" => ":checkered_flag: {$issue['idmarkdown']} just created ",
+    ];
+
+    $notifier = phoxy::Load('misc/atlassian/jira/notifier');
+
+    $notifier->Notify($issue['creator'], $issue, $message);
+
+    if ($issue['assignee'] == null)
+      return;
+    if ($issue['assignee']['id'] == $issue['creator']['id'])
+      return;
+
+    $message['message'] .= " and assigned to YOU";
+    $notifier->Notify($issue['assignee'], $issue, $message);
   }
 }

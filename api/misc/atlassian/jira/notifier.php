@@ -73,6 +73,9 @@ class notifier extends api
 
   public function Notify($who, $issue, $message)
   {
+    if ($who == null)
+      return;
+
     if (is_array($message))
       $parcel = $message;
     else
