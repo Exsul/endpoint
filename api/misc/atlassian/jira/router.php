@@ -172,7 +172,13 @@ class router extends api
     if (!$item['toString'])
       return;
 
-    $message = ":crossed_flags: *{$item['toString']}*";
+    $result = $item['toString'];
+    $message = ":crossed_flags: *{$result}*";
+
+    if ($result == 'Done')
+      $message .= ':tada:';
+    else
+      $message .= ':no_entry:';
 
     phoxy::Load('misc/atlassian/jira/notifier')
       ->RichNotify("#jira_pda", $author, $issue, $message);
