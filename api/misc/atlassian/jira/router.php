@@ -21,6 +21,9 @@ class router extends api
     case 'jira:issue_created':
       $this->handle_issue_create($issue, $data, $user);
       break;
+    case 'jira:issue_deleted':
+      $this->handle_issue_delete($issue, $data, $user);
+      break;
     default:
       phoxy::Load('misc/atlassian/jira')->debuglog("Unknown type ".$data['webhookEvent']);
       return;
@@ -260,6 +263,33 @@ class router extends api
       $message .= " *no-one is assigned!* :suspect:";
     else
       $message .= " assigned to *{$issue['assignee']['title']}*";
+
+    $notifier = phoxy::Load('misc/atlassian/jira/notifier');
+
+    $notifier->RichNotifyWatchers($issue['creator'], $author, $issue, $message);
+    $notifier->RichNotify('#jira_pda', $author, $issue, $message);
+
+    if ($issue['assignee'] == null)
+      return;
+    if ($issue['assignee']['id'] == $issue['creator']['id'])
+      return;
+
+    $notifier->RichNotify($issue['assignee'], $issue, $message);
+  }
+
+  /***
+   * Issue remove
+   ***/
+
+  private function handle_issue_delete($issue, $data, $user)
+  {
+    $message = ":wastebasket: Removed";
+
+    $who_interested =
+    [
+      $issue['creator'],
+      $issue['assignee'],
+    ];
 
     $notifier = phoxy::Load('misc/atlassian/jira/notifier');
 
