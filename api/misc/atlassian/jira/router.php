@@ -175,7 +175,7 @@ class router extends api
     $message = ":crossed_flags: *{$item['toString']}*";
 
     phoxy::Load('misc/atlassian/jira/notifier')
-      ->RichNotify("#kirill_lab", $author, $issue, $message);
+      ->RichNotify("#jira_pda", $author, $issue, $message);
   }
 
   private function on_due_date($issue, $item, $author)
@@ -232,7 +232,7 @@ class router extends api
     switch ($data["issue_event_type_name"])
     {
     case 'issue_created':
-      $this->on_issue_created($issue);
+      $this->on_issue_created($issue, $user);
       break;
     default:
       phoxy::Load('misc/atlassian/jira')->debuglog("Issue created event type unknown {$data['issue_event_type_name']}");
@@ -240,23 +240,31 @@ class router extends api
     }
   }
 
-  private function on_issue_created($issue)
+  private function on_issue_created($issue, $author)
   {
-    $message =
+    $message = ":checkered_flag: Just created ";
+
+    $who_interested =
     [
-      "message" => ":checkered_flag: {$issue['idmarkdown']} just created ",
+      $issue['creator'],
+      $issue['assignee'],
     ];
+
+    if ($issue['assignee'] == null)
+      $message .= " *no-one is assigned!* :suspect:";
+    else
+      $message .= " assigned to *{$issue['assignee']['title']}*";
 
     $notifier = phoxy::Load('misc/atlassian/jira/notifier');
 
-    $notifier->Notify($issue['creator'], $issue, $message);
+    $notifier->RichNotifyWatchers($issue['creator'], $author, $issue, $message);
+    $notifier->RichNotify('#jira_pda', $author, $issue, $message);
 
     if ($issue['assignee'] == null)
       return;
     if ($issue['assignee']['id'] == $issue['creator']['id'])
       return;
 
-    $message['message'] .= " and assigned to YOU";
-    $notifier->Notify($issue['assignee'], $issue, $message);
+    $notifier->RichNotify($issue['assignee'], $issue, $message);
   }
 }

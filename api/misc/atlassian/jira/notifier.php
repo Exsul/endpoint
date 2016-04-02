@@ -28,6 +28,20 @@ class notifier extends api
     return array_unique($prepared);
   }
 
+  private function PriorityColor($issue)
+  {
+    $pallete =
+    [
+      'Highest' => 'ce0000',
+      'High' => 'ea4444',
+      'Medium' => 'ea7d24',
+      'Low' => '2a8735',
+      'Lowest' => '55a557',
+    ];
+
+    return $pallete[$issue['priority']];
+  }
+
   private function PrepareUser($user)
   {
     $name = null;
@@ -58,14 +72,13 @@ class notifier extends api
       'author_icon' => $author['avatar'],
       'title' => "{$issue['idmarkdown']} {$issue['title']}",
       'mrkdwn_in' => ["pretext", "text", "fields"],
+      "color" => "#".$this->PriorityColor($issue),
     ];
 
     $parcel =
     [
       'attach' => array_replace($attach, $extra),
     ];
-
-    phoxy::Load('misc/atlassian/jira')->debuglog($parcel);
 
     if (is_string($who))
       $this->Notify($who, $issue, $parcel);
@@ -102,6 +115,9 @@ class notifier extends api
 
   public function NotifyList($list, $issue, $message)
   {
+    if (isset($list['id'])) // detected user array
+      return $this->Notify($list, $issue, $message);
+
     foreach ($list as $to)
       $this->Notify($to, $issue, $message);
   }
