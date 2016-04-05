@@ -2,6 +2,29 @@
 
 class notifier extends api
 {
+  private static $black;
+
+  public function Blacklist($user)
+  {
+    $username = $this->PrepareUser($user);
+    if (!$username[0] != '@')
+      $username =
+        phoxy::Load('misc/atlassian/jira/users')->translate_to($username);
+
+    if (!isset($this->black))
+      $this->black = [];
+    $this->black[] = $username;
+  }
+
+  private function WhiteSend($from, $to, $parcel, $attach = [])
+  {
+    if (in_array($to, $this->black))
+      return;
+
+    $sender = phoxy::Load('misc/atlassian/jira/footboy');
+    $sender->send($from, $to, $parcel, $attach);
+  }
+
   private function PrepareList($array_of_arrays)
   {
     $res = [];
@@ -109,8 +132,8 @@ class notifier extends api
 
     $to = $this->PrepareUser($who);
 
-    $sender = phoxy::Load('misc/atlassian/jira/footboy');
-    $sender->send($parcel['from'], $to, $parcel['message'], $parcel['attach']);
+
+    $this->WhiteSend($parcel['from'], $to, $parcel['message'], $parcel['attach']);
   }
 
   public function NotifyList($list, $issue, $message)

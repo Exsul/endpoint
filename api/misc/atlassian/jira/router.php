@@ -9,7 +9,10 @@ class router extends api
 
     $user = [];
     if (isset($data['user']))
+    {
       $user = $request->construct_nice_user($data['user']);
+      phoxy::Load('misc/atlassian/jira/notifier')->Blacklist($user);
+    }
 
     switch ($data['webhookEvent'])
     {
