@@ -192,7 +192,11 @@ class router extends api
 
   private function on_due_date($issue, $item, $author)
   {
-    $message = "Due *{$item['from']}* -> *{$item['to']}*";
+    $message = ":alarm_clock: ";
+
+    if ($item['from'] != "")
+      $message .= "*{$item['from']}* -> ";
+    $message .= "*{$item['to']}*";
 
     $who_interested =
     [
@@ -296,8 +300,8 @@ class router extends api
 
     $notifier = phoxy::Load('misc/atlassian/jira/notifier');
 
-    $notifier->RichNotifyWatchers($issue['creator'], $author, $issue, $message);
-    $notifier->RichNotify('#jira_pda', $author, $issue, $message);
+    $notifier->RichNotifyWatchers($issue['creator'], $user, $issue, $message);
+    $notifier->RichNotify('#jira_pda', $user, $issue, $message);
 
     if ($issue['assignee'] == null)
       return;

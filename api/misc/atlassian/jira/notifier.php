@@ -2,23 +2,29 @@
 
 class notifier extends api
 {
-  private static $black;
+  private static $black = [];
 
   public function Blacklist($user)
   {
     $username = $this->PrepareUser($user);
+
+    phoxy::Load('misc/atlassian/jira')->debuglog($username, "Update BlackList");
+
     if (!$username[0] != '@')
       $username =
         phoxy::Load('misc/atlassian/jira/users')->translate_to($username);
 
+    phoxy::Load('misc/atlassian/jira')->debuglog($username, "Update BlackList");
+
+
     if (!isset($this->black))
-      $this->black = [];
-    $this->black[] = $username;
+      self::$black = [];
+    self::$black[] = $username;
   }
 
   private function WhiteSend($from, $to, $parcel, $attach = [])
   {
-    if (in_array($to, $this->black))
+    if (in_array($to, self::$black))
       return;
 
     $sender = phoxy::Load('misc/atlassian/jira/footboy');
