@@ -82,7 +82,7 @@ class footboy extends api
       }
 
       $line[] = $frame['function'];
-      $line[] = json_encode($frame['args']);
+      $line[] = json_encode(substr($frame['args'], 0, 238));
 
       $ret[] = implode("\t", $line);
     }
