@@ -14,14 +14,16 @@ class jira extends api
 
   protected function test()
   {
-    $this->debuglog("Test", "Test");
-    die();
-
     $res = db::Query("SELECT * FROM jira WHERE id=$1",
-      [981], true);
+      [21], true);
 
+    $request = $res->__2array()['data'];
+
+    var_dump($request['comment']['body']);
     // 983 delete
 
-    phoxy::Load("misc/atlassian/jira/router")->handle_event($res->__2array()['data']);
+    $ttt = phoxy::Load("misc/atlassian/jira/users")
+      ->reference_rich($request['comment']['body']);
+    var_dump($ttt);
   }
 }

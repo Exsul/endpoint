@@ -23,20 +23,17 @@ class users extends api
     for ($i = 0; $i < count($parts); $i++)
     {
       $part = $parts[$i];
-      $mode = $i & 1;
-      if (!$mode)
-      {
-        $ret .= $part;
+
+      if (empty($part))
         continue;
-      }
 
       list($name, $other) = explode(']', $part, 2);
-      $translated = $this->translate_to($name);
 
+      $translated = $this->translate_to($name);
       $this->refered[] = $translated;
 
       $ret .= $translated;
-      $ret .= $other;
+      $ret .= " " . $other;
     }
 
     if (strpos($ret, "@channel") !== false)

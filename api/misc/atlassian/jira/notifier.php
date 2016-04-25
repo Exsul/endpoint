@@ -8,14 +8,9 @@ class notifier extends api
   {
     $username = $this->PrepareUser($user);
 
-    phoxy::Load('misc/atlassian/jira')->debuglog($username, "Update BlackList");
-
     if (!$username[0] != '@')
       $username =
         phoxy::Load('misc/atlassian/jira/users')->translate_to($username);
-
-    phoxy::Load('misc/atlassian/jira')->debuglog($username, "Update BlackList");
-
 
     if (!isset($this->black))
       self::$black = [];
